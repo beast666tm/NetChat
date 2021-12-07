@@ -6,5 +6,4 @@ public class SimpleAuthService implements AuthService {
     public String getNickByLoginAndPassword(String login, String password) {
         return JdbcApp.getUserNickname(login, password);
     }
-
 }
