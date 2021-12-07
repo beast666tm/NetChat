@@ -3,7 +3,6 @@ package ru.gb.server;
 import java.sql.*;
 
 class JdbcApp {
-//    private JDBCApp jdbcApp = new JDBCApp();
 
     private static Connection connection;
     private static Statement statement;
@@ -16,9 +15,6 @@ class JdbcApp {
             connection = DriverManager.getConnection("jdbc:sqlite:users.db");
             System.out.println("connected to: \"jdbc:sqlite:users.db\"");
             statement = connection.createStatement();
-            createTable();
-            createTable();
-            infoUsers();
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
@@ -91,19 +87,3 @@ class JdbcApp {
         }
     }
 }
-
-
-//    static void select(int id) throws SQLException {
-//        try (final PreparedStatement ps = connection.prepareStatement("select * from users where id = ?")) {
-//            ps.setInt(1, id);
-//            final ResultSet selected = ps.executeQuery();
-//            while (selected.next()) {
-//                final int ID = selected.getInt(1);
-//                final String NICK = selected.getString(2);
-//                final String LOGIN = selected.getString(3);
-//                final String PASSWORD = selected.getString(4);
-//
-//                System.out.printf("Selected: " + "id:%d   name:%s   login:%s   pass:%s\n", ID, NICK, LOGIN, PASSWORD);
-//            }
-//        }
-//    }

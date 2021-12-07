@@ -4,7 +4,7 @@ public class ServerRunner {
     public static void main(String[] args) {
         try {
             JdbcApp.connect();  // подключение к users.db
-            JdbcApp.prepareAllStatement();
+            JdbcApp.prepareAllStatement(); // авторизация из базы
 //            JdbcApp.createTable(); // создание таблицы SQL если нет
 //            JdbcApp.infoUsers();  // просто инфа из базы
 //            JdbcApp.select(3);  // выборка из баззы по id

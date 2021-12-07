@@ -5,7 +5,7 @@ package ru.gb.ExJ3hw4_1;
  **/
 public class WaitNotifyClass {
     static final Object monitor = new Object();
-    private static char currentLetter = 'A';
+    private static volatile char currentLetter = 'A';
 
     public static void main(String[] args) {
 

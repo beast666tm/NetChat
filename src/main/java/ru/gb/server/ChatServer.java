@@ -32,11 +32,6 @@ public class ChatServer {
         }
     }
 
-
-//    public boolean isNickBusy(String nick) {
-//        return clients.equals(nick);
-//    }
-
     public boolean isNickBusy(String nick) {
         for (ClientHandler c : clients) {
             if (c.getNick().equals(nick)) {

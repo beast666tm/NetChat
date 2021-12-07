@@ -4,52 +4,57 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private static final String COMMAND_PREFIX = "/";
     private static final String SEND_MESSAGE_TO_CLIENT_COMMAND = COMMAND_PREFIX + "w";
     private static final String END_COMMAND = COMMAND_PREFIX + "end";
-    private final Socket socket;
-    private final ChatServer server;
-    private final DataInputStream in;
-    private final DataOutputStream out;
+    private Socket socket;
+    private ChatServer server;
+    private DataInputStream in;
+    private DataOutputStream out;
     private String nick;
     private boolean isAuthClient = false;
 
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+
     public ClientHandler(Socket socket, ChatServer server) {
-        try {
-            this.nick = "";
-            this.socket = socket;
-            this.server = server;
-            this.in = new DataInputStream(socket.getInputStream());
-            this.out = new DataOutputStream(socket.getOutputStream());
-            final int timeout = 120 * 1000;
+        executorService.execute(() -> {
+            try {
+                this.nick = "";
+                this.socket = socket;
+                this.server = server;
+                this.in = new DataInputStream(socket.getInputStream());
+                this.out = new DataOutputStream(socket.getOutputStream());
+                final int timeout = 120 * 1000;
 
-            Thread timer = new Thread(() -> {                                           // run timeout
-                try {
-                    Thread.sleep(timeout);
-                }catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    if (!isAuthClient) {
-                        sendMessage("Time " + (timeout / 1000) + " second is over. This client disconnected from server!");
-                        socket.close();
-                        System.out.println("Timeout " + (timeout / 1000) + " second is over. Client disconnected from server!");
+                Thread timer = new Thread(() -> {                                           // run timeout
+                    try {
+                        Thread.sleep(timeout);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            timer.start();
+                    try {
+                        if (!isAuthClient) {
+                            sendMessage("Time " + (timeout / 1000) + " second is over. This client disconnected from server!");
+                            socket.close();
+                            System.out.println("Timeout " + (timeout / 1000) + " second is over. Client disconnected from server!");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                timer.start();
 
-            Thread auth = new Thread(this::run);
-            auth.start();
+                Thread auth = new Thread(this::run);
+                auth.start();
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void closeConnection() {
@@ -87,10 +92,11 @@ public class ClientHandler {
                     final String password = split[2];
                     final String nick;
                     nick = server.getAuthService().getNickByLoginAndPassword(login, password);
-                    if (nick != null ) {
+                    if (nick != null) {
                         if (server.isNickBusy(nick)) {
                             sendMessage("Пользователь уже авторизован");
                         } else {
+                            System.out.println(Thread.currentThread().getName());
                             sendMessage("/authok " + nick);
                             this.nick = nick;
                             server.broadcast("Пользователь " + nick + " зашел в чат");
@@ -127,7 +133,7 @@ public class ClientHandler {
                     if (END_COMMAND.equals(msg)) {
                         break;
                     }
-                    if (msg.startsWith(SEND_MESSAGE_TO_CLIENT_COMMAND)) { // /w nick1 dkfjslkfj dskj
+                    if (msg.startsWith(SEND_MESSAGE_TO_CLIENT_COMMAND)) { // /w nick1 message to client where nick1
                         final String[] token = msg.split(" ");
                         final String nick = token[1];
                         server.sendMessageToClient(this, nick, msg.substring(SEND_MESSAGE_TO_CLIENT_COMMAND.length() + 2 + nick.length()));
